@@ -1,0 +1,13 @@
+{
+  "name": "vybkoyn",
+  "private": true,
+  "description": "VYBKOY (KOYN) — monorepo scripts",
+  "scripts": {
+    "test:contracts": "cd contracts && npx hardhat test",
+    "test:server": "cd server && npx tsc --noEmit",
+    "test:web": "cd web && npx tsc --noEmit",
+    "test:alpha": "npm run test:contracts && npm run test:server && npm run test:web",
+    "build:web": "cd web && npm run build",
+    "build:server": "cd server && npm run build"
+  }
+}

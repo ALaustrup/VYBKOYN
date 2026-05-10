@@ -1,0 +1,52 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String   @id @default(cuid())
+  walletAddress String   @unique
+  createdAt     DateTime @default(now())
+  state         GameState?
+  sessionNonces SessionNonceUse[]
+}
+
+/// Prevents replay of the same EIP-712 session proof while pre-JWT is still valid.
+model SessionNonceUse {
+  nonce     String   @id @db.VarChar(66)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+}
+
+model GameState {
+  id                    String   @id @default(cuid())
+  userId                String   @unique
+  user                  User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  /// Off-chain credits + leaderboard aggregate (claims move on-chain KOYN separately)
+  totalScore            Decimal  @default(100) @db.Decimal(38, 8)
+
+  baseTpc               Decimal  @default(1) @db.Decimal(18, 8)
+  passivePerSecond      Decimal  @default(0) @db.Decimal(18, 8)
+
+  /// Monotonic tap sequence — client must send next expected seq
+  tapSeq                Int      @default(0)
+  lastTapAt             DateTime?
+
+  /// Rolling 60s window for rate limits (anti-automation)
+  tapWindowStartedAt    DateTime?
+  tapsInWindow          Int      @default(0)
+
+  /// Temporary multiplier (expires)
+  boostMultiplier       Decimal  @default(1) @db.Decimal(18, 8)
+  boostExpiresAt        DateTime?
+
+  updatedAt             DateTime @updatedAt
+}

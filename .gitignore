@@ -1,0 +1,12 @@
+node_modules/
+dist/
+.next/
+.env
+*.log
+coverage/
+typechain-types/
+cache/
+artifacts/
+
+merkle-out/
+*.tsbuildinfo
