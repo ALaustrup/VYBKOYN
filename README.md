@@ -12,9 +12,22 @@ High-fidelity crypto-clicker stack: **Base** mainnet (ERC-20, low fees, EIP-4337
 | `docs/WALLET_ARCHITECTURE.md` | Non-custodial key handling |
 | `docs/SECURITY_CHECKLIST.md` | Click abuse + wallet/security review |
 
-## Quick start (Docker — recommended)
+## Quick start (no Docker — recommended on Windows)
 
-Requires [Docker Desktop](https://www.docker.com/products/docker-desktop/) (or Docker Engine + Compose).
+You do **not** need Docker Desktop. Use **cloud Postgres (Neon)** or a **local PostgreSQL** install, then:
+
+```powershell
+# server/.env  ← DATABASE_URL + JWT_SECRET (see server/.env.example)
+cd server && npx prisma db push
+cd ..
+.\scripts\start-dev.ps1
+```
+
+Details: [`docs/DEV_WITHOUT_DOCKER.md`](docs/DEV_WITHOUT_DOCKER.md).
+
+## Quick start (Docker — optional)
+
+Requires [Docker Desktop](https://www.docker.com/products/docker-desktop/) (or Podman / WSL2 docker-ce).
 
 ```bash
 npm run docker:up

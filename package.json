@@ -9,6 +9,7 @@
     "test:alpha": "npm run test:contracts && npm run test:server && npm run test:web",
     "build:web": "cd web && npm run build",
     "build:server": "cd server && npm run build",
+    "dev": "powershell -ExecutionPolicy Bypass -File ./scripts/start-dev.ps1",
     "docker:up": "docker compose up --build -d",
     "docker:down": "docker compose down",
     "docker:logs": "docker compose logs -f",
