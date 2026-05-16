@@ -3,11 +3,21 @@
 import { useState } from "react";
 import { mnemonicToAccount } from "viem/accounts";
 import type { Connector } from "wagmi";
-import { createEmbeddedWallet, saveEmbeddedMnemonic } from "@/lib/embeddedWallet";
+import { createEmbeddedWallet } from "@/lib/embeddedWallet";
 import { playConnectSound } from "@/lib/sounds";
 import type { useKoynAuth } from "@/hooks/useKoynAuth";
 
 type Auth = ReturnType<typeof useKoynAuth>;
+
+function ErrorBanner({ auth }: { auth: Auth }) {
+  if (!auth.error) return null;
+  return <p className="error-banner">{auth.error}</p>;
+}
+
+function SigningStatus({ auth }: { auth: Auth }) {
+  if (!auth.loading || !auth.signingStep) return null;
+  return <p className="hint-banner">{auth.signingStep}</p>;
+}
 
 export function ConnectPanel({ auth }: { auth: Auth }) {
   const [showCreate, setShowCreate] = useState(false);
@@ -17,15 +27,17 @@ export function ConnectPanel({ auth }: { auth: Auth }) {
   const wcMissing = !process.env.NEXT_PUBLIC_WC_PROJECT_ID;
 
   const onPickWallet = async (connector: Connector) => {
+    auth.setError(null);
     try {
       await auth.connectExternal(connector);
       playConnectSound();
     } catch {
-      /* auth.error */
+      /* error on auth */
     }
   };
 
   const startCreate = () => {
+    auth.setError(null);
     setPendingMnemonic(createEmbeddedWallet().mnemonic);
     setSavedConfirm(false);
     setShowCreate(true);
@@ -33,6 +45,7 @@ export function ConnectPanel({ auth }: { auth: Auth }) {
 
   const confirmCreate = async () => {
     if (!pendingMnemonic || !savedConfirm) return;
+    auth.setError(null);
     const account = mnemonicToAccount(pendingMnemonic);
     try {
       await auth.activateEmbedded({
@@ -44,7 +57,7 @@ export function ConnectPanel({ auth }: { auth: Auth }) {
       setShowCreate(false);
       setPendingMnemonic(null);
     } catch {
-      /* auth.error */
+      /* auth.error + signingStep cleared in hook */
     }
   };
 
@@ -54,13 +67,13 @@ export function ConnectPanel({ auth }: { auth: Auth }) {
       auth.setError("Enter a valid 12+ word recovery phrase");
       return;
     }
+    auth.setError(null);
     try {
       const account = mnemonicToAccount(words);
-      saveEmbeddedMnemonic(words);
       await auth.activateEmbedded({ mnemonic: words, address: account.address, account });
       playConnectSound();
     } catch {
-      auth.setError("Could not restore wallet from phrase");
+      if (!auth.error) auth.setError("Could not restore wallet from phrase");
     }
   };
 
@@ -74,10 +87,17 @@ export function ConnectPanel({ auth }: { auth: Auth }) {
           <input type="checkbox" checked={savedConfirm} onChange={(e) => setSavedConfirm(e.target.checked)} />
           I saved my recovery phrase securely
         </label>
-        <button type="button" className="btn primary" disabled={!savedConfirm || auth.loading} onClick={() => void confirmCreate()}>
+        <ErrorBanner auth={auth} />
+        <SigningStatus auth={auth} />
+        <button
+          type="button"
+          className="btn primary"
+          disabled={!savedConfirm || auth.loading}
+          onClick={() => void confirmCreate()}
+        >
           {auth.loading ? "Signing in…" : "Continue"}
         </button>
-        <button type="button" className="btn ghost" onClick={() => setShowCreate(false)}>
+        <button type="button" className="btn ghost" disabled={auth.loading} onClick={() => setShowCreate(false)}>
           Back
         </button>
       </div>
@@ -92,7 +112,8 @@ export function ConnectPanel({ auth }: { auth: Auth }) {
         ownership to secure the game.
       </p>
 
-      {auth.error && <p className="error-banner">{auth.error}</p>}
+      <ErrorBanner auth={auth} />
+      <SigningStatus auth={auth} />
       {wcMissing && (
         <p className="hint-banner">
           For mobile &amp; QR wallets, add NEXT_PUBLIC_WC_PROJECT_ID (free at cloud.reown.com). Browser extensions work
@@ -135,3 +156,4 @@ export function ConnectPanel({ auth }: { auth: Auth }) {
     </div>
   );
 }
+
