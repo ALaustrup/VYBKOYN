@@ -2,7 +2,7 @@
 
 ## Infrastructure
 
-- [ ] PostgreSQL reachable; `npx prisma db push` applied (includes `SessionNonceUse`).
+- [ ] **Local/staging:** `npm run docker:up` (Postgres + API + web) **or** manual Postgres + `npx prisma db push` (includes `SessionNonceUse`).
 - [ ] API env: `JWT_SECRET`, `DATABASE_URL`, `CHAIN_ID`, `CORS_ORIGINS` (production web origin only).
 - [ ] `REQUIRED_CLIENT_BUILD` aligned with deployed web `NEXT_PUBLIC_CLIENT_BUILD`.
 - [ ] TLS termination (reverse proxy or host) on API and web.

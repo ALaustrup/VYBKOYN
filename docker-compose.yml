@@ -1,0 +1,53 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: koyn
+      POSTGRES_PASSWORD: koyn_dev
+      POSTGRES_DB: koyn
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U koyn -d koyn"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  api:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    ports:
+      - "4000:4000"
+    environment:
+      DATABASE_URL: postgresql://koyn:koyn_dev@postgres:5432/koyn?schema=public
+      JWT_SECRET: docker-dev-jwt-replace-in-production
+      CHAIN_ID: "8453"
+      CORS_ORIGINS: http://localhost:3000
+      REQUIRED_CLIENT_BUILD: "1"
+      ALPHA_PUBLIC: "0"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  web:
+    build:
+      context: ./web
+      dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_API_URL: http://localhost:4000
+        NEXT_PUBLIC_CHAIN_ID: "8453"
+        NEXT_PUBLIC_CLIENT_BUILD: "1"
+        NEXT_PUBLIC_BASE_RPC_URL: https://mainnet.base.org
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    depends_on:
+      - api
+
+volumes:
+  pgdata:

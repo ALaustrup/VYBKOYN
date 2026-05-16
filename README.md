@@ -12,7 +12,25 @@ High-fidelity crypto-clicker stack: **Base** mainnet (ERC-20, low fees, EIP-4337
 | `docs/WALLET_ARCHITECTURE.md` | Non-custodial key handling |
 | `docs/SECURITY_CHECKLIST.md` | Click abuse + wallet/security review |
 
-## Quick start
+## Quick start (Docker — recommended)
+
+Requires [Docker Desktop](https://www.docker.com/products/docker-desktop/) (or Docker Engine + Compose).
+
+```bash
+npm run docker:up
+```
+
+| Service   | URL |
+|-----------|-----|
+| Web app   | http://localhost:3000 |
+| API       | http://localhost:4000 |
+| Postgres  | `localhost:5432` (user `koyn` / pass `koyn_dev` / db `koyn`) |
+
+The API container runs **`prisma db push`** on startup (schema includes `SessionNonceUse`). Logs: `npm run docker:logs`. Stop: `npm run docker:down`.
+
+Optional env overrides: copy `.env.docker.example` → `.env` and wire into `docker-compose.yml` if you customize secrets.
+
+## Quick start (manual)
 
 ```bash
 cd contracts && npm install && npm run compile

@@ -8,6 +8,10 @@
     "test:web": "cd web && npx tsc --noEmit",
     "test:alpha": "npm run test:contracts && npm run test:server && npm run test:web",
     "build:web": "cd web && npm run build",
-    "build:server": "cd server && npm run build"
+    "build:server": "cd server && npm run build",
+    "docker:up": "docker compose up --build -d",
+    "docker:down": "docker compose down",
+    "docker:logs": "docker compose logs -f",
+    "docker:ps": "docker compose ps"
   }
 }
